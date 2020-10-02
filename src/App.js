@@ -1,25 +1,38 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { createContext, useState, useEffect } from "react";
+import Header from "./components/Header";
+import Home from "./components/pages/Home";
+import { auth } from "firebase";
+
+export const AuthContext = createContext(null);
 
 function App() {
+  let [user, setUser] = useState(null);
+  let [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const unregisterAuthObserver = auth().onAuthStateChanged((currentUser) => {
+      console.log("AUTH STATE CHANGE:", currentUser);
+      if (currentUser) {
+        if (user !== currentUser) {
+          console.log('new user is updated, updating.')
+          setUser(currentUser);
+          setIsLoggedIn(true);
+        }
+      } else {
+        setUser(undefined);
+        setIsLoggedIn(false);
+      }
+    });
+    return () => unregisterAuthObserver();
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthContext.Provider value={{ user, setUser, isLoggedIn, setIsLoggedIn }}>
+      <div className="App">
+        <Header />
+        <Home />
+      </div>
+    </AuthContext.Provider>
   );
 }
 
