@@ -1,37 +1,17 @@
-name: Build and Ping FeaturePeek
+name: Build and ping FeaturePeek
 on: push
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12.x]
-        
     steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.js ${{ matrix.node-version }}
+    - uses: actions/checkout@v2
+    - name: Use node 12.x
       uses: actions/setup-node@v1
       with:
-        node-version: ${{ matrix.node-version }}
-          
-    - name: Cache node modules
-      uses: actions/cache@v1
-      with:
-        path: node_modules
-        key: ${{ runner.OS }}-build-${{ hashFiles('yarn.lock') }}
-        restore-keys: |
-          ${{ runner.OS }}-build-${{ env.cache-name }}-
-          ${{ runner.OS }}-build-
-          ${{ runner.OS }}-
-          
+        node-version: 12.x
     - name: Install dependencies
-      run: yarn
-      
-    - name: Build frontend assets
+      run: yarn install
+    - name: Build
       run: yarn build
-      
     - name: Ping FeaturePeek
       run: bash <(curl -s https://peek.run/ci)
-      env:
-        CI: true
-  
